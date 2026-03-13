@@ -1,0 +1,51 @@
+-- =================================
+-- Gender Pay Gap Analysis 
+-- Author: Phoebe T. Vergara
+-- Data Source: US Bureau of Labor Statistics // https://www.bls.gov/cps/tables.htm#otheryears // 2018 - 2024
+-- Google Sheets, BigQuery, Looker Studio
+-- =============================
+
+-- QUERY 1: This answers my question about how did the gender pay gap change after COVID?. This query pulls the pay gap percentage for each year from 2018 - 2024
+-- so I could see the changes beofre and after 2020.
+SELECT
+  year,
+  pay_gap_pct
+FROM
+  `da01-31326.pay_gap_data.table_37`
+WHERE
+  Characteristics = 'Total, 16 years and over'
+ORDER BY
+  year ASC;
+
+-- QUERY #2: This query answers my question about which occupation group shows the fastest improvement in the pay gap. This query resulted in whiich group improved
+-- the most, which got worse and which made little to no changes at all. 
+
+CREATE TABLE `da01-31326.pay_gap_data.query2_improvement` AS
+SELECT
+  occupation,
+  MAX(CASE WHEN year = 2018 THEN pay_gap_pct END) AS gap_2018,
+  MAX(CASE WHEN year = 2024 THEN pay_gap_pct END) AS gap_2024,
+  ROUND(
+    MAX(CASE WHEN year = 2018 THEN pay_gap_pct END) -
+    MAX(CASE WHEN year = 2024 THEN pay_gap_pct END),
+  4) AS improvement
+FROM
+  `da01-31326.pay_gap_data.table_39`
+GROUP BY
+  occupation
+ORDER BY
+  improvement DESC;
+
+-- QUERY #3: This query shows the fieldsd of occupation where women earn the closest to men, where 1.0 would mean perfect equality and anything below that means
+-- women earning less. 
+SELECT
+  occupation,
+  men_median_earnings,
+  women_median_earnings,
+  women_to_men_ratio
+FROM
+  `da01-31326.pay_gap_data.table_39`
+WHERE
+  year = 2024
+ORDER BY
+  women_to_men_ratio DESC;
